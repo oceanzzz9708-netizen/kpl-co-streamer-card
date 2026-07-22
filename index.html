@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>KPL · 星火融卡计划</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#d4a843;--gold-light:#f0d68a;--gold-dark:#8b6914;
+  --red:#e63946;--red-dark:#9b1b22;
+  --purple:#7c3aed;--cyan:#06b6d4;
+  --bg:#08080f;--bg-card:#11111e;--bg-card2:#18182b;
+  --text:#d4d4dc;--text-dim:#7777a0;--text-bright:#fff;
+}
+html{font-size:16px;background:#000}
+body{
+  font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#app{max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow:hidden}
+
+/* Header */
+.header{
+  position:relative;z-index:10;
+  padding:24px 20px 16px;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(212,168,67,.08) 0%,transparent 100%);
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.header .logo{
+  font-size:26px;font-weight:900;color:var(--gold);
+  letter-spacing:2px;text-shadow:0 0 30px rgba(212,168,67,.3);
+}
+.header .sub{font-size:12px;color:var(--text-dim);margin-top:6px;letter-spacing:3px}
+.header .live-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:10px;padding:4px 14px;border-radius:12px;
+  background:rgba(230,57,70,.15);color:var(--red);font-size:11px;
+  border:1px solid rgba(230,57,70,.25);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* Tabs */
+.tabs{
+  display:flex;gap:0;padding:0;position:relative;z-index:10;
+  background:rgba(0,0,0,.3);
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.tab-btn{
+  flex:1;padding:13px 0;text-align:center;font-size:14px;font-weight:600;
+  color:var(--text-dim);cursor:pointer;border:none;background:none;
+  border-bottom:2px solid transparent;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-btn .badge{
+  font-size:10px;background:var(--red);color:#fff;padding:1px 7px;
+  border-radius:10px;font-weight:700;
+}
+
+/* Tab content */
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+
+/* Card grid */
+.section-title{
+  font-size:15px;font-weight:700;color:var(--text-bright);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.section-title::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,.06);
+}
+.card-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;
+}
+.mini-card{
+  aspect-ratio:2.2/3;border-radius:10px;overflow:hidden;
+  position:relative;cursor:pointer;transition:all .2s;
+  border:2px solid rgba(255,255,255,.06);
+}
+.mini-card:active{transform:scale(.94)}
+.mini-card.selected{
+  border-color:var(--gold);
+  box-shadow:0 0 16px rgba(212,168,67,.4),0 0 4px rgba(212,168,67,.2);
+  transform:scale(1.03);
+}
+.mini-card .card-bg{
+  width:100%;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:6px;
+}
+.mini-card.type-streamer .card-bg{
+  background:linear-gradient(180deg,#1a1030 0%,#0f0d20 50%,#0a0820 100%);
+}
+.mini-card.type-team .card-bg{
+  background:linear-gradient(180deg,#1a1a10 0%,#15120a 50%,#100d08 100%);
+}
+.mini-card .c-icon{font-size:28px;margin-bottom:4px}
+.mini-card .c-name{font-size:11px;font-weight:700;color:#fff;text-align:center;line-height:1.3}
+.mini-card .c-count{
+  position:absolute;top:4px;right:5px;font-size:10px;font-weight:900;
+  color:var(--gold);background:rgba(0,0,0,.7);padding:1px 6px;
+  border-radius:8px;
+}
+.mini-card .c-type{font-size:9px;color:var(--text-dim);margin-top:2px}
+.mini-card.empty{opacity:.3;pointer-events:none;border-style:dashed}
+
+/* Get card button */
+.action-area{text-align:center;margin-bottom:20px}
+.btn-live{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;border-radius:25px;
+  background:linear-gradient(135deg,rgba(212,168,67,.2),rgba(240,214,138,.1));
+  border:1px solid rgba(212,168,67,.3);color:var(--gold-light);
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
+  letter-spacing:1px;
+}
+.btn-live:active{transform:scale(.95);background:rgba(212,168,67,.3)}
+.btn-live .live-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--red);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+
+/* ---- FUSION PAGE ---- */
+.fusion-hint{
+  text-align:center;font-size:12px;color:var(--text-dim);
+  margin-bottom:16px;line-height:1.6;
+}
+.fusion-zone{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  margin:20px 0;min-height:100px;
+}
+.fusion-slot{
+  width:80px;height:105px;border-radius:12px;
+  border:2px dashed rgba(255,255,255,.1);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;transition:all .3s;position:relative;
+}
+.fusion-slot.filled{
+  border-style:solid;border-color:rgba(212,168,67,.4);
+  background:rgba(212,168,67,.05);
+}
+.fusion-slot .slot-label{
+  font-size:10px;color:var(--text-dim);margin-top:4px;
+}
+.fusion-slot .slot-icon{font-size:20px;margin-bottom:4px;opacity:.4}
+.fusion-slot.filled .slot-icon{opacity:1}
+.fusion-plus{font-size:28px;color:var(--gold);font-weight:900}
+.fusion-equals{font-size:28px;color:var(--purple);font-weight:900}
+.fusion-result{
+  min-width:110px;padding:12px;
+  background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(6,182,212,.1));
+  border:1px solid rgba(124,58,237,.3);border-radius:12px;
+  text-align:center;
+}
+.fusion-result .r-name{font-size:14px;font-weight:700;color:#fff}
+.fusion-result .r-score{font-size:12px;color:var(--cyan);margin-top:4px}
+.fusion-result .r-preview{
+  font-size:11px;color:var(--text-dim);margin-top:2px;
+}
+
+.fusion-actions{text-align:center;margin-top:16px}
+.btn-fuse{
+  display:inline-block;padding:14px 48px;border-radius:30px;
+  background:linear-gradient(135deg,var(--purple),#a78bfa);
+  color:#fff;font-size:16px;font-weight:800;border:none;
+  cursor:pointer;letter-spacing:2px;transition:all .2s;
+  box-shadow:0 4px 20px rgba(124,58,237,.3);
+}
+.btn-fuse:active{transform:scale(.94)}
+.btn-fuse:disabled{
+  opacity:.4;pointer-events:none;box-shadow:none;
+}
+.btn-clear{
+  display:inline-block;margin-top:10px;
+  padding:8px 24px;border-radius:20px;
+  background:transparent;border:1px solid rgba(255,255,255,.1);
+  color:var(--text-dim);font-size:12px;cursor:pointer;
+  transition:all .2s;
+}
+.btn-clear:active{background:rgba(255,255,255,.05)}
+
+/* ---- LEADERBOARD ---- */
+.lb-filter{
+  display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;
+  padding-bottom:4px;
+}
+.lb-filter .lb-tag{
+  padding:6px 14px;border-radius:16px;font-size:12px;
+  white-space:nowrap;cursor:pointer;background:var(--bg-card2);
+  color:var(--text-dim);border:1px solid rgba(255,255,255,.04);
+  transition:all .2s;flex-shrink:0;
+}
+.lb-filter .lb-tag.active{
+  background:rgba(212,168,67,.12);color:var(--gold);
+  border-color:rgba(212,168,67,.3);
+}
+.lb-item{
+  display:flex;align-items:center;padding:12px 14px;gap:12px;
+  border-radius:12px;margin-bottom:8px;transition:all .2s;
+  background:var(--bg-card);border:1px solid rgba(255,255,255,.03);
+}
+.lb-item.rank-1{border-color:var(--gold);background:linear-gradient(135deg,rgba(212,168,67,.1),rgba(212,168,67,.02))}
+.lb-item.rank-2{border-color:rgba(192,192,192,.3)}
+.lb-item.rank-3{border-color:rgba(205,127,50,.3)}
+.lb-rank{
+  font-size:16px;font-weight:900;width:30px;text-align:center;
+  color:var(--text-dim);flex-shrink:0;
+}
+.rank-1 .lb-rank{color:var(--gold);font-size:20px}
+.rank-2 .lb-rank{color:#c0c0c0}
+.rank-3 .lb-rank{color:#cd7f32}
+.lb-combo{
+  flex:1;font-size:14px;font-weight:700;color:#fff;
+}
+.lb-combo .combo-streamer{color:var(--purple)}
+.lb-combo .combo-x{color:var(--text-dim);margin:0 2px;font-size:11px}
+.lb-combo .combo-team{color:var(--gold-light)}
+.lb-combo .combo-reward{
+  font-size:9px;color:var(--cyan);font-weight:400;display:block;margin-top:2px;
+}
+.lb-score{
+  font-size:16px;font-weight:900;color:var(--gold);
+}
+.lb-score span{font-size:11px;color:var(--text-dim);font-weight:400}
+
+/* Toast */
+.toast{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.92);color:var(--gold);
+  padding:12px 28px;border-radius:25px;font-size:13px;
+  z-index:200;pointer-events:none;
+  border:1px solid rgba(212,168,67,.25);
+  opacity:0;transition:all .35s;
+}
+.toast.show{opacity:1;top:80px}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.85);z-index:150;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;padding:20px;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-content{
+  background:var(--bg-card);border-radius:20px;padding:28px 20px;
+  max-width:340px;width:100%;text-align:center;
+  border:1px solid rgba(212,168,67,.2);
+  transform:scale(.9);transition:transform .3s;
+}
+.modal-overlay.open .modal-content{transform:scale(1)}
+.modal-content .m-icon{font-size:52px;margin-bottom:12px}
+.modal-content h3{font-size:18px;color:var(--gold);margin-bottom:8px}
+.modal-content p{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:16px}
+.modal-content .m-cards{
+  display:flex;gap:12px;justify-content:center;margin-bottom:16px;
+}
+.modal-content .m-card-item{
+  padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;
+}
+.modal-content .m-card-item.s{background:rgba(124,58,237,.15);color:#a78bfa}
+.modal-content .m-card-item.t{background:rgba(212,168,67,.1);color:var(--gold-light)}
+
+/* Particles */
+.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99}
+.particle{
+  position:absolute;width:5px;height:5px;border-radius:50%;
+  animation:particleUp 2.5s ease-out forwards;opacity:0;
+}
+@keyframes particleUp{
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(-180px) scale(0)}
+}
+
+/* Page bg */
+.page-bg{
+  position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 30% 20%,rgba(124,58,237,.06) 0%,transparent 60%),
+             radial-gradient(ellipse at 70% 60%,rgba(212,168,67,.05) 0%,transparent 60%),
+             radial-gradient(ellipse at 50% 80%,rgba(230,57,70,.04) 0%,transparent 50%);
+}
+
+/* Fusion animation overlay */
+.fusion-flash{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:100;
+  opacity:0;transition:opacity .1s;
+  background:radial-gradient(circle,rgba(212,168,67,.3) 0%,transparent 70%);
+}
+.fusion-flash.active{opacity:1}
+
+@media(max-width:360px){
+  .card-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .fusion-zone{gap:8px}
+  .fusion-slot{width:68px;height:90px}
+}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="particles" id="particles"></div>
+<div class="fusion-flash" id="fusionFlash"></div>
+
+<div id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">⚔️ 星火融卡计划</div>
+    <div class="sub">KPL · 二路主播应援特别活动</div>
+    <div class="live-badge">🔴 活动进行中 · 二路主播集合</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="backpack">
+      🎒 背包<span class="badge" id="badgeCount">0</span>
+    </button>
+    <button class="tab-btn" data-tab="fusion">
+      ⚡ 融卡
+    </button>
+    <button class="tab-btn" data-tab="leaderboard">
+      🏆 应援榜
+    </button>
+  </div>
+
+  <!-- Tab: Backpack -->
+  <div class="tab-content active" id="tab-backpack">
+    <div class="action-area">
+      <button class="btn-live" onclick="simulateEnterLive()">
+        <span class="live-dot"></span> 🎥 进入二路直播间 · 掉落卡牌
+      </button>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:6px">
+        每日可进入3个不同主播直播间，每次掉落1张主播卡+2张战队卡
+      </div>
+    </div>
+
+    <div class="section-title">🎭 主播卡</div>
+    <div class="card-grid" id="streamerCards"></div>
+
+    <div class="section-title">🛡️ 战队卡</div>
+    <div class="card-grid" id="teamCards"></div>
+  </div>
+
+  <!-- Tab: Fusion -->
+  <div class="tab-content" id="tab-fusion">
+    <div class="fusion-hint">
+      🫸 点击下方"可选卡牌"加入融合，主播卡 + 战队卡 = 应援组合<br>
+      融合后消耗卡牌，为组合在榜单中 +1 积分
+    </div>
+
+    <div class="fusion-zone">
+      <div class="fusion-slot" id="slotStreamer" onclick="clearSlot('streamer')">
+        <div class="slot-icon">🎭</div>
+        <div class="slot-label">主播卡</div>
+      </div>
+      <div class="fusion-plus">+</div>
+      <div class="fusion-slot" id="slotTeam" onclick="clearSlot('team')">
+        <div class="slot-icon">🛡️</div>
+        <div class="slot-label">战队卡</div>
+      </div>
+      <div class="fusion-equals" style="font-size:22px">=</div>
+      <div class="fusion-result" id="fusionPreview">
+        <div class="r-name" style="color:var(--text-dim)">等待选择...</div>
+      </div>
+    </div>
+
+    <div class="fusion-actions">
+      <button class="btn-fuse" id="btnFuse" disabled onclick="doFusion()">⚡ 融 合</button>
+      <br>
+      <button class="btn-clear" onclick="clearAllSlots()">🗑️ 清空选择</button>
+    </div>
+
+    <div class="section-title" style="margin-top:24px">🎴 可选卡牌（点击加入融合）</div>
+    <div id="fusionCardPool" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+  </div>
+
+  <!-- Tab: Leaderboard -->
+  <div class="tab-content" id="tab-leaderboard">
+    <div class="lb-filter" id="lbFilter"></div>
+    <div class="lb-list" id="lbList"></div>
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--text-dim);line-height:1.6">
+      🎁 活动结束后，<strong style="color:var(--gold)">总榜第一</strong>的组合将在<br>
+      线下进行联动直播！快来为你喜欢的组合应援吧~
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const streamers = [
+  {id:'s1',name:'千年',icon:'🎭',color:'#a78bfa'},
+  {id:'s2',name:'拖米',icon:'🎪',color:'#7c3aed'},
+  {id:'s3',name:'Gemini',icon:'🎙️',color:'#6366f1'},
+  {id:'s4',name:'李九',icon:'🎤',color:'#8b5cf6'},
+  {id:'s5',name:'瓶子',icon:'📢',color:'#a855f7'},
+];
+
+const teams = [
+  {id:'t1',name:'AG超玩会',icon:'🔴',color:'#e63946'},
+  {id:'t2',name:'重庆狼队',icon:'🐺',color:'#d4a843'},
+  {id:'t3',name:'eStarPro',icon:'⭐',color:'#3b82f6'},
+  {id:'t4',name:'Hero久竞',icon:'🏆',color:'#f59e0b'},
+  {id:'t5',name:'TTG',icon:'🐯',color:'#f97316'},
+  {id:'t6',name:'北京WB',icon:'🌙',color:'#06b6d4'},
+];
+
+// ==================== STATE ====================
+let ownedStreamerCards = {}; // {s1: 2, s2: 1, ...}
+let ownedTeamCards = {};     // {t1: 3, t2: 2, ...}
+let fusionScores = {};      // {"s1_t1": 15, "s1_t2": 8, ...}
+let todayEntries = 0;       // Daily livestream entries
+let fusionSlot = {streamer:null, team:null};
+
+// Load from localStorage
+function loadState(){
+  try{
+    const d=JSON.parse(localStorage.getItem('kpl_fusion_state'));
+    if(d){
+      ownedStreamerCards=d.ownedStreamerCards||{};
+      ownedTeamCards=d.ownedTeamCards||{};
+      fusionScores=d.fusionScores||{};
+      todayEntries=d.todayEntries||0;
+      // Check if new day
+      const today=new Date().toDateString();
+      if(d.lastDate!==today){todayEntries=0;}
+    }
+  }catch(e){}
+}
+function saveState(){
+  localStorage.setItem('kpl_fusion_state',JSON.stringify({
+    ownedStreamerCards,ownedTeamCards,fusionScores,todayEntries,
+    lastDate:new Date().toDateString()
+  }));
+}
+
+// Helper: get card count
+function getStreamerCount(id){return ownedStreamerCards[id]||0;}
+function getTeamCount(id){return ownedTeamCards[id]||0;}
+function totalCards(){
+  let c=0;
+  Object.values(ownedStreamerCards).forEach(v=>c+=v);
+  Object.values(ownedTeamCards).forEach(v=>c+=v);
+  return c;
+}
+function getFusionScore(sid,tid){return fusionScores[sid+'_'+tid]||0;}
+
+// ==================== RENDER ====================
+function renderAll(){
+  renderBackpack();
+  renderFusionPage();
+  renderLeaderboard();
+  updateBadge();
+}
+
+function renderBackpack(){
+  // Streamer cards
+  const sg=document.getElementById('streamerCards');
+  sg.innerHTML=streamers.map(s=>{
+    const count=getStreamerCount(s.id);
+    return `<div class="mini-card type-streamer ${count===0?'empty':''}">
+      <div class="card-bg">
+        <div class="c-icon">${s.icon}</div>
+        <div class="c-name">${s.name}</div>
+        <div class="c-type">主播卡</div>
+      </div>
+      ${count>0?`<div class="c-count">×${count}</div>`:''}
+    </div>`;
+  }).join('');
+
+  // Team cards
+  const tg=document.getElementById('teamCards');
+  tg.innerHTML=teams.map(t=>{
+    const count=getTeamCount(t.id);
+    return `<div class="mini-card type-team ${count===0?'empty':''}">
+      <div class="card-bg">
+        <div class="c-icon">${t.icon}</div>
+        <div class="c-name">${t.name}</div>
+        <div class="c-type">战队卡</div>
+      </div>
+      ${count>0?`<div class="c-count">×${count}</div>`:''}
+    </div>`;
+  });
+}
+
+function renderFusionPage(){
+  updateFusionSlotDisplay();
+  renderFusionCardPool();
+}
+
+function updateFusionSlotDisplay(){
+  const ss=document.getElementById('slotStreamer');
+  const st=document.getElementById('slotTeam');
+  const fp=document.getElementById('fusionPreview');
+  const btn=document.getElementById('btnFuse');
+
+  // Streamer slot
+  if(fusionSlot.streamer){
+    const s=streamers.find(x=>x.id===fusionSlot.streamer);
+    ss.className='fusion-slot filled type-streamer';
+    ss.innerHTML=`<div class="slot-icon">${s.icon}</div><div style="font-size:12px;font-weight:700;color:#fff">${s.name}</div><div class="slot-label">点击移除</div>`;
+  }else{
+    ss.className='fusion-slot';
+    ss.innerHTML='<div class="slot-icon">🎭</div><div class="slot-label">主播卡</div>';
+    ss.onclick=()=>clearSlot('streamer');
+  }
+
+  // Team slot
+  if(fusionSlot.team){
+    const t=teams.find(x=>x.id===fusionSlot.team);
+    st.className='fusion-slot filled type-team';
+    st.innerHTML=`<div class="slot-icon">${t.icon}</div><div style="font-size:12px;font-weight:700;color:#fff">${t.name}</div><div class="slot-label">点击移除</div>`;
+  }else{
+    st.className='fusion-slot';
+    st.innerHTML='<div class="slot-icon">🛡️</div><div class="slot-label">战队卡</div>';
+    st.onclick=()=>clearSlot('team');
+  }
+
+  // Preview
+  if(fusionSlot.streamer&&fusionSlot.team){
+    const s=streamers.find(x=>x.id===fusionSlot.streamer);
+    const t=teams.find(x=>x.id===fusionSlot.team);
+    const score=getFusionScore(fusionSlot.streamer,fusionSlot.team);
+    fp.innerHTML=`
+      <div class="r-name"><span style="color:#a78bfa">${s.name}</span> × <span style="color:var(--gold-light)">${t.name}</span></div>
+      <div class="r-score">当前积分: ${score}</div>
+      <div class="r-preview">融合后 → ${score+1}</div>
+    `;
+    btn.disabled=false;
+  }else if(fusionSlot.streamer||fusionSlot.team){
+    fp.innerHTML='<div class="r-name" style="color:var(--text-dim)">再选一张...</div>';
+    btn.disabled=true;
+  }else{
+    fp.innerHTML='<div class="r-name" style="color:var(--text-dim)">等待选择...</div>';
+    btn.disabled=true;
+  }
+}
+
+function renderFusionCardPool(){
+  const pool=document.getElementById('fusionCardPool');
+  let html='';
+
+  // Streamers
+  streamers.forEach(s=>{
+    const count=getStreamerCount(s.id);
+    if(count>0){
+      const sel=fusionSlot.streamer===s.id;
+      html+=`<div class="mini-card type-streamer ${sel?'selected':''}" onclick="selectForFusion('streamer','${s.id}')" style="width:72px;aspect-ratio:2.2/3">
+        <div class="card-bg">
+          <div class="c-icon">${s.icon}</div>
+          <div class="c-name">${s.name}</div>
+        </div>
+        <div class="c-count">×${count}</div>
+      </div>`;
+    }
+  });
+
+  // Divider if both types present
+  let hasS=streamers.some(s=>getStreamerCount(s.id)>0);
+  let hasT=teams.some(t=>getTeamCount(t.id)>0);
+  if(hasS&&hasT) html+='<div style="width:100%;height:8px"></div>';
+
+  // Teams
+  teams.forEach(t=>{
+    const count=getTeamCount(t.id);
+    if(count>0){
+      const sel=fusionSlot.team===t.id;
+      html+=`<div class="mini-card type-team ${sel?'selected':''}" onclick="selectForFusion('team','${t.id}')" style="width:72px;aspect-ratio:2.2/3">
+        <div class="card-bg">
+          <div class="c-icon">${t.icon}</div>
+          <div class="c-name">${t.name}</div>
+        </div>
+        <div class="c-count">×${count}</div>
+      </div>`;
+    }
+  });
+
+  if(!hasS&&!hasT) html='<div style="color:var(--text-dim);font-size:13px;text-align:center;padding:30px">🎒 背包空空如也<br>先去直播间获取卡牌吧！</div>';
+
+  pool.innerHTML=html;
+}
+
+function renderLeaderboard(){
+  // Build all combinations
+  let combos=[];
+  streamers.forEach(s=>{
+    teams.forEach(t=>{
+      const score=getFusionScore(s.id,t.id);
+      combos.push({sid:s.id,tid:t.id,streamer:s,team:t,score});
+    });
+  });
+  combos.sort((a,b)=>b.score-a.score);
+
+  // Assign ranks
+  let rank=1;let prevScore=-1;let displayRank=1;
+  combos.forEach((c,i)=>{
+    if(i>0&&c.score<prevScore) displayRank=i+1;
+    c.displayRank=displayRank;
+    prevScore=c.score;
+  });
+
+  // Render filter tags
+  const filter=document.getElementById('lbFilter');
+  let fhtml='<div class="lb-tag active" data-filter="all">全部</div>';
+  streamers.forEach(s=>{
+    fhtml+=`<div class="lb-tag" data-filter="${s.id}">${s.icon} ${s.name}</div>`;
+  });
+  filter.innerHTML=fhtml;
+
+  // Filter click handler
+  filter.querySelectorAll('.lb-tag').forEach(tag=>{
+    tag.addEventListener('click',function(){
+      filter.querySelectorAll('.lb-tag').forEach(t=>t.classList.remove('active'));
+      this.classList.add('active');
+      renderLBList(this.dataset.filter);
+    });
+  });
+
+  renderLBList('all',combos);
+}
+
+let currentComboData=[];
+function renderLBList(filter,combos){
+  if(!combos){combos=currentComboData;}
+  currentComboData=combos;
+
+  let filtered=combos;
+  if(filter&&filter!=='all'){
+    filtered=combos.filter(c=>c.sid===filter);
+  }
+
+  const list=document.getElementById('lbList');
+  list.innerHTML=filtered.map(c=>{
+    const rc=c.displayRank<=3?`rank-${c.displayRank}`:'';
+    const medal=['🥇','🥈','🥉'][c.displayRank-1]||c.displayRank;
+    const total=combos.length;
+    return `<div class="lb-item ${rc}">
+      <div class="lb-rank">${medal}</div>
+      <div class="lb-combo">
+        <span class="combo-streamer">${c.streamer.icon} ${c.streamer.name}</span>
+        <span class="combo-x">×</span>
+        <span class="combo-team">${c.team.icon} ${c.team.name}</span>
+        ${c.displayRank===1?'<span class="combo-reward">🏆 活动结束后线下联动！</span>':''}
+      </div>
+      <div class="lb-score">${c.score}<span>分</span></div>
+    </div>`;
+  }).join('');
+}
+
+function updateBadge(){
+  document.getElementById('badgeCount').textContent=totalCards();
+}
+
+// ==================== CARD ACQUISITION ====================
+function simulateEnterLive(){
+  if(todayEntries>=3){
+    showToast('⚠️ 今日已进入3个直播间，明天再来吧！');
+    return;
+  }
+
+  // Random streamer
+  const s=streamers[Math.floor(Math.random()*streamers.length)];
+  // Random 2 teams
+  const shuffled=[...teams].sort(()=>Math.random()-.5);
+  const t1=shuffled[0];
+  const t2=shuffled[1];
+
+  // Give cards
+  ownedStreamerCards[s.id]=(ownedStreamerCards[s.id]||0)+1;
+  ownedTeamCards[t1.id]=(ownedTeamCards[t1.id]||0)+1;
+  ownedTeamCards[t2.id]=(ownedTeamCards[t2.id]||0)+1;
+  todayEntries++;
+  saveState();
+  renderAll();
+
+  // Show modal
+  openDropModal(s,t1,t2);
+  burstParticles(window.innerWidth/2,300,25);
+}
+
+function openDropModal(s,t1,t2){
+  const overlay=document.getElementById('modalOverlay');
+  const content=document.getElementById('modalContent');
+  content.innerHTML=`
+    <div class="m-icon">🎥</div>
+    <h3>${s.icon} ${s.name} 的直播间</h3>
+    <p style="color:#a78bfa">狼队 vs AG超玩会 · KPL夏季赛</p>
+    <div class="m-cards">
+      <div class="m-card-item s">${s.icon} ${s.name}卡</div>
+      <div class="m-card-item t">${t1.icon} ${t1.name}卡</div>
+      <div class="m-card-item t">${t2.icon} ${t2.name}卡</div>
+    </div>
+    <p>🎉 掉落 1 张主播卡 + 2 张战队卡！<br>前往「融卡」页面开始融合吧~</p>
+    <button class="btn-fuse" style="margin-top:10px" onclick="closeModal()">收下卡牌！</button>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px">今日剩余进入次数：${3-todayEntries}/3</div>
+  `;
+  overlay.classList.add('open');
+}
+
+// ==================== FUSION ====================
+function selectForFusion(type,id){
+  if(type==='streamer'){
+    if(fusionSlot.streamer===id){
+      fusionSlot.streamer=null;
+    }else{
+      fusionSlot.streamer=id;
+    }
+  }else{
+    if(fusionSlot.team===id){
+      fusionSlot.team=null;
+    }else{
+      fusionSlot.team=id;
+    }
+  }
+  renderFusionPage();
+}
+
+function clearSlot(type){
+  if(type==='streamer') fusionSlot.streamer=null;
+  else fusionSlot.team=null;
+  renderFusionPage();
+}
+
+function clearAllSlots(){
+  fusionSlot.streamer=null;
+  fusionSlot.team=null;
+  renderFusionPage();
+}
+
+function doFusion(){
+  const sid=fusionSlot.streamer;
+  const tid=fusionSlot.team;
+  if(!sid||!tid) return;
+
+  const sc=getStreamerCount(sid);
+  const tc=getTeamCount(tid);
+  if(sc<=0||tc<=0){
+    showToast('⚠️ 卡牌数量不足');
+    return;
+  }
+
+  // Consume cards
+  ownedStreamerCards[sid]--;
+  if(ownedStreamerCards[sid]<=0) delete ownedStreamerCards[sid];
+  ownedTeamCards[tid]--;
+  if(ownedTeamCards[tid]<=0) delete ownedTeamCards[tid];
+
+  // Update score
+  const key=sid+'_'+tid;
+  fusionScores[key]=(fusionScores[key]||0)+1;
+
+  saveState();
+
+  // Flash effect
+  const flash=document.getElementById('fusionFlash');
+  flash.classList.add('active');
+  setTimeout(()=>flash.classList.remove('active'),300);
+
+  // Particles
+  burstParticles(window.innerWidth/2,window.innerHeight/2,35);
+
+  // Show result toast
+  const s=streamers.find(x=>x.id===sid);
+  const t=teams.find(x=>x.id===tid);
+  const newScore=getFusionScore(sid,tid);
+  showToast(`⚡ ${s.name} × ${t.name} 融合成功！积分 ${newScore}`);
+
+  // Clear slots and re-render
+  fusionSlot.streamer=null;
+  fusionSlot.team=null;
+  renderAll();
+}
+
+// ==================== UTILS ====================
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function burstParticles(x,y,count=20){
+  const container=document.getElementById('particles');
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.style.left=x+'px';p.style.top=y+'px';
+    p.style.animationDuration=(1.5+Math.random()*2)+'s';
+    p.style.transform='translateX('+(Math.random()*120-60)+'px)';
+    const colors=['#d4a843','#f0d68a','#e63946','#7c3aed','#06b6d4','#a78bfa'];
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    container.appendChild(p);
+    setTimeout(()=>p.remove(),2800);
+  }
+}
+
+function openModal(type,data){
+  // Handled per-case in simulateEnterLive
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.getElementById('modalOverlay').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+// ==================== TAB SWITCHING ====================
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.getElementById('tab-'+this.dataset.tab).classList.add('active');
+    if(this.dataset.tab==='backpack') renderBackpack();
+    if(this.dataset.tab==='fusion') renderFusionPage();
+    if(this.dataset.tab==='leaderboard') renderLeaderboard();
+  });
+});
+
+// ==================== INIT ====================
+loadState();
+renderAll();
+
+console.log('⚔️ KPL · 星火融卡计划 Demo 已就绪');
+console.log('🎒 背包 - 查看已收集的卡牌');
+console.log('⚡ 融卡 - 主播卡 + 战队卡 = 应援组合积分');
+console.log('🏆 应援榜 - 组合积分排行榜');
+console.log('🎁 活动结束后总榜第一的组合将在线下联动！');
+console.log('数据存储：localStorage · 每日3次直播间掉落');
+</script>
+</body>
+</html>
