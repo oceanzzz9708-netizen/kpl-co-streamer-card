@@ -228,6 +228,90 @@ body{
   line-height:1.6;padding:16px;border-top:1px solid rgba(255,255,255,.04);
 }
 
+/* ---- Streamer Content Section ---- */
+.content-section{
+  margin-top:24px;padding:16px 0;
+  border-top:2px solid rgba(212,168,67,.15);
+}
+.content-section .cs-title{
+  font-size:15px;font-weight:800;color:var(--gold);
+  margin-bottom:4px;display:flex;align-items:center;gap:8px;
+}
+.content-section .cs-sub{
+  font-size:11px;color:var(--text-dim);margin-bottom:14px;
+}
+.streamer-content-card{
+  background:var(--bg-card);border-radius:14px;overflow:hidden;
+  margin-bottom:16px;border:1px solid rgba(255,255,255,.05);
+}
+.sc-header{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;
+  background:rgba(255,255,255,.02);
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.sc-avatar{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.sc-avatar.s1{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
+.sc-avatar.s2{background:linear-gradient(135deg,#e17055,#fab1a0)}
+.sc-avatar.s3{background:linear-gradient(135deg,#0984e3,#74b9ff)}
+.sc-avatar.s4{background:linear-gradient(135deg,#00b894,#55efc4)}
+.sc-avatar.s5{background:linear-gradient(135deg,#e84393,#fd79a8)}
+.sc-name{font-size:13px;font-weight:700;color:#fff}
+.sc-tag{
+  font-size:10px;padding:2px 8px;border-radius:10px;
+  background:rgba(6,182,212,.15);color:var(--cyan);
+}
+.sc-posts{
+  display:flex;overflow-x:auto;gap:10px;padding:12px 14px;
+  scroll-behavior:smooth;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.sc-posts::-webkit-scrollbar{display:none}
+.sc-post{
+  flex-shrink:0;width:160px;border-radius:10px;overflow:hidden;
+  background:var(--bg-card2);cursor:pointer;transition:all .2s;
+  border:1px solid rgba(255,255,255,.03);
+}
+.sc-post:active{transform:scale(.96)}
+.sc-post-thumb{
+  width:100%;aspect-ratio:16/9;display:flex;
+  align-items:center;justify-content:center;position:relative;
+}
+.sc-post-thumb.video{background:linear-gradient(135deg,#1a1030,#0d0a20)}
+.sc-post-thumb.image{background:linear-gradient(135deg,#0a1a15,#060d0a)}
+.sc-post-thumb.text-post{background:linear-gradient(135deg,#1a1015,#120d10)}
+.sc-post-thumb .pt-icon{font-size:36px}
+.sc-post-thumb .pt-badge{
+  position:absolute;top:6px;left:6px;font-size:10px;
+  padding:2px 8px;border-radius:6px;color:#fff;font-weight:700;
+}
+.pt-badge.video{background:rgba(230,57,70,.7)}
+.pt-badge.image{background:rgba(16,185,129,.7)}
+.pt-badge.text{background:rgba(6,182,212,.7)}
+.sc-post-thumb .pt-play{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:28px;opacity:.7;
+}
+.sc-post-info{
+  padding:8px 10px;
+}
+.sc-post-info .pi-title{
+  font-size:11px;font-weight:700;color:#fff;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.sc-post-info .pi-meta{
+  font-size:10px;color:var(--text-dim);margin-top:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.sc-post-info .pi-meta span{display:flex;align-items:center;gap:3px}
+.sc-empty{
+  text-align:center;padding:30px;color:var(--text-dim);font-size:13px;
+}
+
 /* Toast */
 .toast{
   position:fixed;top:60px;left:50%;transform:translateX(-50%);
@@ -419,6 +503,13 @@ body{
     <div class="lb-footer">
       🎁 活动结束后，<strong style="color:var(--gold)">组合榜总榜第一</strong>的<br>
       「主播 × 英雄皮肤 × 道具」组合将在线下进行联动内容创作！
+    </div>
+
+    <!-- Streamer Content Feed -->
+    <div class="content-section" id="streamerContent">
+      <div class="cs-title">🎬 主播内容产出</div>
+      <div class="cs-sub">👇 下滑查看每个主播在活动中产出的图文视频内容</div>
+      <div id="contentFeed"></div>
     </div>
   </div>
 </div>
@@ -720,6 +811,91 @@ function doFusion(){
   renderAll();
 }
 
+// ==================== STREAMER CONTENT ====================
+const streamerContents = {
+  s1: [
+    {type:'video',title:'青草挑战！安琪拉水果甜心这波操作太秀了',emoji:'🌿',views:'12.3w',time:'2小时前'},
+    {type:'image',title:'🏆 感恩粉丝！千年×AG超玩会组合冲上榜首',emoji:'🏆',views:'8.6w',time:'5小时前'},
+    {type:'text',title:'今天在直播间和AG粉丝们一起融卡太开心了！大家最喜欢的组合我都看到啦，明天继续加油 🔥',emoji:'💬',views:'5.2w',time:'8小时前'},
+    {type:'video',title:'猪头特效版安琪拉教学，节目效果拉满！',emoji:'🐷',views:'15.8w',time:'昨天'},
+  ],
+  s2: [
+    {type:'video',title:'糖果🍬+妲己魅力维加斯，这组合绝了！',emoji:'🍬',views:'9.7w',time:'1小时前'},
+    {type:'image',title:'拖米×eStar Pro 粉丝见面会合照来啦',emoji:'📸',views:'11.2w',time:'4小时前'},
+    {type:'text',title:'今天融卡活动粉丝们都太猛了！感谢大家把拖米×妲己魅力维加斯×糖果组合顶上去，爱你们 ❤️',emoji:'💬',views:'6.8w',time:'6小时前'},
+    {type:'video',title:'墨镜一戴谁都不爱，KPL赛后整活时刻',emoji:'🕶️',views:'13.4w',time:'昨天'},
+  ],
+  s3: [
+    {type:'video',title:'Gemini锐评：这波融卡组合太有创造力了',emoji:'🎙️',views:'22.1w',time:'30分钟前'},
+    {type:'image',title:'数据分析：当前组合榜TOP10深度解读',emoji:'📊',views:'16.5w',time:'3小时前'},
+    {type:'text',title:'作为专业解说，我觉得粉丝们融卡的这个玩法真的很有意思，每个组合背后都是一个故事。大家觉得哪个组合最合理？',emoji:'💬',views:'18.9w',time:'7小时前'},
+    {type:'video',title:'Gemini×孙悟空至尊宝×墨镜，这个组合竟然冲到了前五！',emoji:'🐵',views:'19.2w',time:'昨天'},
+  ],
+  s4: [
+    {type:'video',title:'李九：用青草🌿道具做安琪拉特效，笑不活了',emoji:'🌿',views:'10.5w',time:'2小时前'},
+    {type:'image',title:'李九×Hero久竞 赛后复盘图文',emoji:'📝',views:'7.3w',time:'5小时前'},
+    {type:'text',title:'今天解说的时候看到弹幕全在讨论融卡榜，KPL的粉丝们真的都太有才了！每个组合都能整出不同的活 😂',emoji:'💬',views:'9.1w',time:'9小时前'},
+    {type:'video',title:'蛋糕🎂道具整活，粉丝直呼太抽象了',emoji:'🎂',views:'8.8w',time:'昨天'},
+  ],
+  s5: [
+    {type:'video',title:'瓶子喇叭📣喊麦版KPL解说，全程高能',emoji:'📣',views:'17.3w',time:'1小时前'},
+    {type:'image',title:'瓶子×北京WB 联动海报曝光',emoji:'🎨',views:'12.6w',time:'4小时前'},
+    {type:'text',title:'喇叭道具卡在融卡活动里超受欢迎啊！大家多去直播间刷起来，我们来比一比谁的组合分最高！',emoji:'💬',views:'10.4w',time:'6小时前'},
+    {type:'video',title:'猪头🐷+喇叭📣双重道具整蛊，队友笑疯了',emoji:'🐷',views:'20.1w',time:'昨天'},
+  ],
+};
+
+function renderStreamerContent(){
+  const feed=document.getElementById('contentFeed');
+  let html='';
+
+  streamers.forEach(s=>{
+    const contents=streamerContents[s.id];
+    if(!contents||contents.length===0) return;
+
+    html+=`<div class="streamer-content-card">
+      <div class="sc-header">
+        <div class="sc-avatar ${s.id}">${s.icon}</div>
+        <div>
+          <div class="sc-name">${s.name}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:2px">${contents.length}条内容</div>
+        </div>
+        <span class="sc-tag" style="margin-left:auto">KPL星火融卡计划</span>
+      </div>
+      <div class="sc-posts">`;
+
+    contents.forEach(c=>{
+      const typeLabel={video:'短视频',image:'图文',text:'文字'}[c.type]||'';
+      const typeCls={video:'video',image:'image',text:'text'}[c.type]||'';
+      html+=`<div class="sc-post" onclick="previewContent('${s.name}','${c.title.replace(/'/g,"\\'")}','${c.type}')">
+        <div class="sc-post-thumb ${c.type==='text'?'text-post':c.type}">
+          <span class="pt-badge ${c.type==='text'?'text':c.type}">${typeLabel}</span>
+          ${c.type==='video'?`<div class="pt-play">▶️</div>`:''}
+          <span class="pt-icon">${c.emoji}</span>
+        </div>
+        <div class="sc-post-info">
+          <div class="pi-title">${c.title}</div>
+          <div class="pi-meta">
+            <span>👁️ ${c.views}</span>
+            <span>🕐 ${c.time}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    html+=`</div></div>`;
+  });
+
+  if(!html) html='<div class="sc-empty">暂无内容产出，快去直播间集卡融合吧！</div>';
+  feed.innerHTML=html;
+}
+
+function previewContent(streamer,title,type){
+  // Simple preview
+  showToast(`📺 ${streamer} · ${title.slice(0,20)}...`);
+  // In production, this would open a detail page or video player
+}
+
 // ==================== LEADERBOARD ====================
 function renderLeaderboard(){
   let combos=[];
@@ -853,7 +1029,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('tab-'+this.dataset.tab).classList.add('active');
     if(this.dataset.tab==='backpack') renderBackpack();
     if(this.dataset.tab==='fusion') renderFusionPage();
-    if(this.dataset.tab==='leaderboard') renderLeaderboard();
+    if(this.dataset.tab==='leaderboard'){ renderLeaderboard(); renderStreamerContent(); }
   });
 });
 
@@ -861,6 +1037,7 @@ function renderAll(){
   renderBackpack();
   renderFusionPage();
   renderLeaderboard();
+  renderStreamerContent();
   updateBadge();
 }
 
