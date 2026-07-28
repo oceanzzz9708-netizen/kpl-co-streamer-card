@@ -433,10 +433,11 @@ body{
   <div class="tab-content active" id="tab-backpack">
     <div class="action-area">
       <button class="btn-live" onclick="simulateEnterLive()">
-        <span class="live-dot"></span> 🎥 进入二路直播间 · 掉落卡牌
+        <span class="live-dot"></span> 🎰 进入直播间抽卡 · 随机掉落
       </button>
       <div style="font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.7">
-        📌 每日可进入3个不同主播直播间，每次掉落 1张主播卡 + 1张英雄卡 + 1张道具卡<br>
+        📌 每日可进入3次KPL赛事直播间观赛，每次从奖池中<strong style="color:var(--gold-light)">随机抽取</strong> 1张主播卡 + 1张英雄卡 + 1张道具卡<br>
+        🎯 主播卡为全主播随机掉落，非定向获取，每次抽卡都充满惊喜！<br>
         🎭 活动期间，每位主播绑定粉丝投票最多的组合，主播将<strong style="color:var(--gold-light)">COS对应王者英雄角色</strong>，<br>
         并搭配道具卡元素创作专属短视频内容<br>
         <span style="color:var(--text-dim)">例：千年 COS安琪拉·水果甜心 + 青草道具 → 拍一段"草台班子"整活视频 🎬</span>
@@ -954,7 +955,7 @@ function renderLBList(filter,combos){
 // ==================== CARD ACQUISITION ====================
 function simulateEnterLive(){
   if(todayEntries>=3){
-    showToast('⚠️ 今日已进入3个直播间，明天再来吧！'); return;
+    showToast('⚠️ 今日已进入3次直播间，明天再来吧！'); return;
   }
   const s=streamers[Math.floor(Math.random()*streamers.length)];
   const h=heroes[Math.floor(Math.random()*heroes.length)];
@@ -976,18 +977,23 @@ function openDropModal(s,h,p){
   const content=document.getElementById('modalContent');
   const matches=['狼队 vs AG超玩会','eStar vs Hero久竞','TTG vs 北京WB','狼队 vs TTG','AG超玩会 vs eStar'];
   const match=matches[Math.floor(Math.random()*matches.length)];
+  // 随机选取一个直播间作为入口
+  const roomHost=streamers[Math.floor(Math.random()*streamers.length)];
   content.innerHTML=`
-    <div class="m-icon">🎥</div>
-    <h3>${s.icon} ${s.name} 的直播间</h3>
+    <div class="m-icon">🎰</div>
+    <h3>${roomHost.icon} ${roomHost.name} 的二路观赛间</h3>
     <div class="m-match">${match} · KPL夏季赛</div>
+    <div style="margin:12px 0;padding:8px;background:rgba(212,168,67,.08);border-radius:8px;font-size:11px;color:var(--gold-light)">
+      🎁 观赛抽卡中... 从奖池随机掉落！
+    </div>
     <div class="m-cards">
-      <div class="m-card-item cs">🎭 ${s.name}卡</div>
+      <div class="m-card-item cs">🎭 ${s.name}卡 <span style="font-size:9px;opacity:.6">(随机)</span></div>
       <div class="m-card-item ch">${h.icon} ${h.name}-${h.skin}卡</div>
       <div class="m-card-item cp">${p.icon} ${p.name}卡</div>
     </div>
-    <p>🎉 掉落 1 张主播卡 + 1 张英雄卡 + 1 张道具卡！<br>前往「融卡」将三张卡融合为组合应援~</p>
+    <p>🎉 恭喜获得 1 张随机主播卡 + 1 张英雄卡 + 1 张道具卡！<br>前往「融卡」将三张卡融合为组合应援~</p>
     <button class="btn-fuse" style="margin-top:8px" onclick="closeModal()">收下卡牌！</button>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:8px">今日剩余进入次数：${3-todayEntries}/3</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px">今日剩余抽卡次数：${3-todayEntries}/3</div>
   `;
   overlay.classList.add('open');
 }
