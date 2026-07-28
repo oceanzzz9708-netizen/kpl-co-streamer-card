@@ -983,7 +983,15 @@ function openDropModal(s,h,p){
     <div class="m-icon">🎰</div>
     <h3>${roomHost.icon} ${roomHost.name} 的二路观赛间</h3>
     <div class="m-match">${match} · KPL夏季赛</div>
-    <div style="margin:12px 0;padding:8px;background:rgba(212,168,67,.08);border-radius:8px;font-size:11px;color:var(--gold-light)">
+    <div style="margin:10px 0;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:10px;text-align:left;border:1px solid rgba(255,255,255,.05)">
+      <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:8px;">📋 观赛任务完成情况</div>
+      <div style="font-size:11px;line-height:2;color:var(--text)">✅ 点击页面进入直播间</div>
+      <div style="font-size:11px;line-height:2;color:var(--text)">✅ 观赛 10 分钟</div>
+      <div style="font-size:11px;line-height:2;color:var(--text)">${Math.random()>0.3?'✅ 发表一条弹幕':'⬜ 发表一条弹幕'}</div>
+      <div style="font-size:11px;line-height:2;color:var(--text)">${Math.random()>0.5?'✅ 参与投稿':'⬜ 参与投稿'}</div>
+      <div style="font-size:11px;line-height:2;color:var(--text)">⬜ 打开王者荣耀游戏</div>
+    </div>
+    <div style="margin:10px 0;padding:8px;background:rgba(212,168,67,.08);border-radius:8px;font-size:11px;color:var(--gold-light)">
       🎁 观赛抽卡中... 从奖池随机掉落！
     </div>
     <div class="m-cards">
