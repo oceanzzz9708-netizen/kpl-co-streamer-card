@@ -436,7 +436,7 @@ body{
         <span class="live-dot"></span> 🎰 进入直播间抽卡 · 随机掉落
       </button>
       <div style="font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.7">
-        📌 每日可进入3次KPL赛事直播间观赛，每次从奖池中<strong style="color:var(--gold-light)">随机抽取</strong> 1张主播卡 + 1张英雄卡 + 1张道具卡<br>
+        📌 进入KPL赛事直播间观赛，每次可从奖池中<strong style="color:var(--gold-light)">随机抽取</strong> 1张主播卡 + 1张英雄卡 + 1张道具卡<br>
         🎯 主播卡为全主播随机掉落，非定向获取，每次抽卡都充满惊喜！<br>
         🎭 活动期间，每位主播绑定粉丝投票最多的组合，主播将<strong style="color:var(--gold-light)">COS对应王者英雄角色</strong>，<br>
         并搭配道具卡元素创作专属短视频内容<br>
@@ -559,7 +559,6 @@ let ownedS = {};  // {s1: 2, ...}
 let ownedH = {};  // {h1: 3, ...}
 let ownedP = {};  // {p1: 1, ...}
 let fusionScores = {}; // {"s1_h1_p1": 15, ...}
-let todayEntries = 0;
 let fusionSlot = {streamer:null, hero:null, prop:null};
 
 // Mock trade data
@@ -574,15 +573,13 @@ function loadState(){
     const d=JSON.parse(localStorage.getItem('kpl_fusion3_state'));
     if(d){
       ownedS=d.ownedS||{}; ownedH=d.ownedH||{}; ownedP=d.ownedP||{};
-      fusionScores=d.fusionScores||{}; todayEntries=d.todayEntries||0;
-      if(d.lastDate!==new Date().toDateString()) todayEntries=0;
+      fusionScores=d.fusionScores||{};
     }
   }catch(e){}
 }
 function saveState(){
   localStorage.setItem('kpl_fusion3_state',JSON.stringify({
-    ownedS,ownedH,ownedP,fusionScores,todayEntries,
-    lastDate:new Date().toDateString()
+    ownedS,ownedH,ownedP,fusionScores
   }));
 }
 
@@ -954,9 +951,6 @@ function renderLBList(filter,combos){
 
 // ==================== CARD ACQUISITION ====================
 function simulateEnterLive(){
-  if(todayEntries>=3){
-    showToast('⚠️ 今日已进入3次直播间，明天再来吧！'); return;
-  }
   const s=streamers[Math.floor(Math.random()*streamers.length)];
   const h=heroes[Math.floor(Math.random()*heroes.length)];
   const p=props[Math.floor(Math.random()*props.length)];
@@ -964,7 +958,6 @@ function simulateEnterLive(){
   ownedS[s.id]=(ownedS[s.id]||0)+1;
   ownedH[h.id]=(ownedH[h.id]||0)+1;
   ownedP[p.id]=(ownedP[p.id]||0)+1;
-  todayEntries++;
   saveState();
   renderAll();
 
@@ -1001,7 +994,6 @@ function openDropModal(s,h,p){
     </div>
     <p>🎉 恭喜获得 1 张随机主播卡 + 1 张英雄卡 + 1 张道具卡！<br>前往「融卡」将三张卡融合为组合应援~</p>
     <button class="btn-fuse" style="margin-top:8px" onclick="closeModal()">收下卡牌！</button>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:8px">今日剩余抽卡次数：${3-todayEntries}/3</div>
   `;
   overlay.classList.add('open');
 }
